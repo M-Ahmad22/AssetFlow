@@ -50,9 +50,6 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
-/* ===============================
-   TYPES
-================================ */
 interface UserFormData {
   name: string;
   email: string;
@@ -69,9 +66,6 @@ const initialFormData: UserFormData = {
   status: "Active",
 };
 
-/* ===============================
-   COMPONENT
-================================ */
 export default function Users() {
   const {
     user: currentUser,
@@ -90,9 +84,6 @@ export default function Users() {
   const [formData, setFormData] = useState<UserFormData>(initialFormData);
   const [formErrors, setFormErrors] = useState<Partial<UserFormData>>({});
 
-  /* ===============================
-     UI HELPERS
-  ================================ */
   const getRoleIcon = (role: UserRole) => {
     switch (role) {
       case "Admin":
@@ -120,9 +111,6 @@ export default function Users() {
       ? "bg-[hsl(var(--success)/0.15)] text-[hsl(var(--success))]"
       : "bg-muted text-muted-foreground";
 
-  /* ===============================
-     VALIDATION
-  ================================ */
   const validateForm = (): boolean => {
     const errors: Partial<UserFormData> = {};
 
@@ -151,9 +139,6 @@ export default function Users() {
     return Object.keys(errors).length === 0;
   };
 
-  /* ===============================
-     DIALOG HANDLERS
-  ================================ */
   const handleOpenDialog = (user?: User) => {
     if (user) {
       setEditingUser(user);
@@ -179,9 +164,6 @@ export default function Users() {
     setFormErrors({});
   };
 
-  /* ===============================
-     CREATE / UPDATE
-  ================================ */
   const handleSubmit = async () => {
     if (!validateForm()) return;
 
@@ -217,9 +199,6 @@ export default function Users() {
     handleCloseDialog();
   };
 
-  /* ===============================
-     DELETE
-  ================================ */
   const handleDelete = async () => {
     if (!userToDelete) return;
 
@@ -233,9 +212,6 @@ export default function Users() {
     setUserToDelete(null);
   };
 
-  /* ===============================
-     ROLE / STATUS
-  ================================ */
   const handleRoleChange = async (id: string, role: UserRole) => {
     const success = await changeUserRole(id, role);
     success
@@ -256,11 +232,8 @@ export default function Users() {
 
   const isCurrentUser = (id: string) => currentUser?.id === id;
 
-  /* ===============================
-     RENDER
-  ================================ */
   return (
-    <Layout>
+    <Layout title="Users" description="Manage user accounts and permissions">
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -269,8 +242,10 @@ export default function Users() {
               <UsersIcon className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <h1 className="text-2xl font-semibold">User Management</h1>
-              <p className="text-sm text-muted-foreground">
+              <h1 className="hidden lg:text-2xl font-semibold">
+                User Management
+              </h1>
+              <p className="hidden lg:text-sm text-muted-foreground">
                 Manage user accounts and permissions
               </p>
             </div>
