@@ -1,244 +1,245 @@
-import { useParams, useNavigate, Link } from 'react-router-dom';
-import { Layout } from '@/components/layout/Layout';
-import { useInventory } from '@/context/InventoryContext';
-import { useAuth } from '@/context/AuthContext';
-import { locations } from '@/data/locations';
-import { StatusBadge } from '@/components/ui/StatusBadge';
+import { Layout } from "@/components/layout/Layout";
+import { useInventory } from "@/context/InventoryContext";
+import { useAuth } from "@/context/AuthContext";
+import { StatusBadge } from "@/components/ui/StatusBadge";
+import { Link } from "react-router-dom";
 import {
-  ArrowLeft,
-  Edit,
-  Trash2,
   Package,
+  FolderTree,
   MapPin,
-  Calendar,
-  Tag,
-  Hash,
-  FileText,
-} from 'lucide-react';
-import { useState } from 'react';
+  AlertTriangle,
+  TrendingUp,
+  ArrowRight,
+} from "lucide-react";
 
-export default function AssetDetails() {
-  const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
-  const { getAssetById, getCategoryById, deleteAsset } = useInventory();
-  const { hasPermission } = useAuth();
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
+export default function Dashboard() {
+  const { assets, categories, locations } = useInventory();
+  const { user } = useAuth();
 
-  const asset = id ? getAssetById(id) : undefined;
-  const category = asset ? getCategoryById(asset.categoryId) : undefined;
-  const location = asset
-    ? locations.find((l) => l.id === asset.locationId)
-    : undefined;
+  const totalAssets = assets.length;
+  const totalCategories = categories.length;
+  const totalLocations = locations.length;
+  const lowStockItems = assets.filter((a) => a.quantity < 5).length;
 
-  if (!asset) {
-    return (
-      <Layout title="Asset Not Found">
-        <div className="enterprise-card p-8 text-center">
-          <Package className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <h2 className="text-xl font-semibold text-foreground mb-2">
-            Asset Not Found
-          </h2>
-          <p className="text-muted-foreground mb-4">
-            The asset you're looking for doesn't exist or has been deleted.
-          </p>
-          <Link to="/assets" className="btn-primary">
-            Back to Assets
-          </Link>
-        </div>
-      </Layout>
-    );
-  }
-
-  const handleDelete = () => {
-    deleteAsset(asset.id);
-    navigate('/assets');
+  const statusCounts = {
+    "In Use": assets.filter((a) => a.status === "In Use").length,
+    Available: assets.filter((a) => a.status === "Available").length,
+    "In Stock": assets.filter((a) => a.status === "In Stock").length,
+    "In Repair": assets.filter((a) => a.status === "In Repair").length,
   };
 
+  const recentAssets = [...assets]
+    .sort(
+      (a, b) =>
+        new Date(b.purchaseDate).getTime() - new Date(a.purchaseDate).getTime()
+    )
+    .slice(0, 5);
+
   return (
-    <Layout title="Asset Details" description={asset.name}>
-      {/* Back Button */}
-      <button
-        onClick={() => navigate('/assets')}
-        className="btn-ghost gap-2 mb-6"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        Back to Assets
-      </button>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Main Info */}
-        <div className="lg:col-span-2 space-y-6">
-          <div className="enterprise-card p-6">
-            <div className="flex items-start justify-between mb-6">
-              <div>
-                <h2 className="text-2xl font-semibold text-foreground">
-                  {asset.name}
-                </h2>
-                <p className="text-muted-foreground mt-1 font-mono">
-                  {asset.serialNumber}
-                </p>
-              </div>
-              <StatusBadge status={asset.status} />
+    <Layout
+      title={`Welcome back, ${user?.name?.split(" ")[0] || "User"}`}
+      description="Here's an overview of your inventory system"
+    >
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div className="stat-card">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="stat-card-value">{totalAssets}</p>
+              <p className="stat-card-label">Total Assets</p>
             </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="flex items-start gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                  <Tag className="h-5 w-5" />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Category</p>
-                  <p className="font-medium text-foreground">
-                    {category?.name || 'Unknown'}
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[hsl(var(--success)/0.1)] text-[hsl(var(--success))]">
-                  <MapPin className="h-5 w-5" />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Location</p>
-                  <p className="font-medium text-foreground">
-                    {location?.name || 'Unknown'}
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[hsl(var(--info)/0.1)] text-[hsl(var(--info))]">
-                  <Calendar className="h-5 w-5" />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Purchase Date</p>
-                  <p className="font-medium text-foreground">
-                    {new Date(asset.purchaseDate).toLocaleDateString('en-US', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric',
-                    })}
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[hsl(var(--warning)/0.1)] text-[hsl(var(--warning))]">
-                  <Hash className="h-5 w-5" />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Quantity</p>
-                  <p
-                    className={`font-medium ${
-                      asset.quantity < 5
-                        ? 'text-[hsl(var(--warning))]'
-                        : 'text-foreground'
-                    }`}
-                  >
-                    {asset.quantity} units
-                    {asset.quantity < 5 && (
-                      <span className="text-sm ml-2">(Low Stock)</span>
-                    )}
-                  </p>
-                </div>
-              </div>
+            <div className="stat-card-icon bg-primary/10 text-primary">
+              <Package className="h-5 w-5" />
             </div>
-
-            {asset.notes && (
-              <div className="mt-6 pt-6 border-t border-border">
-                <div className="flex items-start gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary text-muted-foreground">
-                    <FileText className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Notes</p>
-                    <p className="text-foreground mt-1">{asset.notes}</p>
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
         </div>
 
-        {/* Actions Sidebar */}
-        <div className="space-y-6">
-          <div className="enterprise-card p-5">
-            <h3 className="text-lg font-semibold text-foreground mb-4">
-              Actions
-            </h3>
-            <div className="space-y-3">
-              {(hasPermission('canUpdate') || hasPermission('canUpdateStatus')) && (
-                <Link
-                  to={`/assets/${asset.id}/edit`}
-                  className="btn-primary w-full gap-2"
-                >
-                  <Edit className="h-4 w-4" />
-                  Edit Asset
-                </Link>
-              )}
-              {hasPermission('canDelete') && (
-                <button
-                  onClick={() => setShowDeleteModal(true)}
-                  className="btn-destructive w-full gap-2"
-                >
-                  <Trash2 className="h-4 w-4" />
-                  Delete Asset
-                </button>
-              )}
+        <div className="stat-card">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="stat-card-value">{totalCategories}</p>
+              <p className="stat-card-label">Categories</p>
+            </div>
+            <div className="stat-card-icon bg-[hsl(var(--info)/0.1)] text-[hsl(var(--info))]">
+              <FolderTree className="h-5 w-5" />
             </div>
           </div>
+        </div>
 
-          <div className="enterprise-card p-5">
-            <h3 className="text-lg font-semibold text-foreground mb-4">
-              Location Details
-            </h3>
-            {location && (
-              <div className="space-y-2">
-                <p className="text-sm">
-                  <span className="text-muted-foreground">Name: </span>
-                  <span className="text-foreground">{location.name}</span>
-                </p>
-                <p className="text-sm">
-                  <span className="text-muted-foreground">Address: </span>
-                  <span className="text-foreground">{location.address}</span>
-                </p>
-                <p className="text-sm">
-                  <span className="text-muted-foreground">Type: </span>
-                  <span className="text-foreground capitalize">
-                    {location.type}
-                  </span>
-                </p>
-              </div>
-            )}
+        <div className="stat-card">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="stat-card-value">{totalLocations}</p>
+              <p className="stat-card-label">Locations</p>
+            </div>
+            <div className="stat-card-icon bg-[hsl(var(--success)/0.1)] text-[hsl(var(--success))]">
+              <MapPin className="h-5 w-5" />
+            </div>
+          </div>
+        </div>
+
+        <div className="stat-card">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="stat-card-value">{lowStockItems}</p>
+              <p className="stat-card-label">Low Stock Items</p>
+            </div>
+            <div className="stat-card-icon bg-[hsl(var(--warning)/0.1)] text-[hsl(var(--warning))]">
+              <AlertTriangle className="h-5 w-5" />
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Delete Confirmation Modal */}
-      {showDeleteModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/50">
-          <div className="enterprise-card p-6 max-w-md w-full mx-4">
-            <h3 className="text-lg font-semibold text-foreground mb-2">
-              Delete Asset
-            </h3>
-            <p className="text-muted-foreground mb-6">
-              Are you sure you want to delete "{asset.name}"? This action cannot
-              be undone.
-            </p>
-            <div className="flex justify-end gap-3">
-              <button
-                onClick={() => setShowDeleteModal(false)}
-                className="btn-secondary"
-              >
-                Cancel
-              </button>
-              <button onClick={handleDelete} className="btn-destructive">
-                Delete
-              </button>
-            </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="enterprise-card p-5">
+          <h3 className="text-lg font-semibold text-foreground mb-4">
+            Asset Status Overview
+          </h3>
+
+          <div className="space-y-4">
+            {Object.entries(statusCounts).map(([status, count]) => {
+              const percentage =
+                totalAssets > 0 ? Math.round((count / totalAssets) * 100) : 0;
+
+              return (
+                <div key={status} className="flex items-center justify-between">
+                  <StatusBadge status={status as any} />
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium text-foreground">
+                      {count}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      ({percentage}%)
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
-      )}
+
+        <div className="enterprise-card p-5 lg:col-span-2">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-foreground">
+              Recent Assets
+            </h3>
+            <Link
+              to="/assets"
+              className="text-sm text-primary hover:underline flex items-center gap-1"
+            >
+              View all <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="enterprise-table">
+              <thead>
+                <tr>
+                  <th>Asset Name</th>
+                  <th>Serial Number</th>
+                  <th>Status</th>
+                  <th>Purchase Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                {recentAssets.length > 0 ? (
+                  recentAssets.map((asset) => (
+                    <tr key={asset.id}>
+                      <td className="font-medium">{asset.name}</td>
+                      <td className="text-muted-foreground">
+                        {asset.serialNumber}
+                      </td>
+                      <td>
+                        <StatusBadge status={asset.status} />
+                      </td>
+                      <td className="text-muted-foreground">
+                        {new Date(asset.purchaseDate).toLocaleDateString()}
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td
+                      colSpan={4}
+                      className="text-center text-muted-foreground py-6"
+                    >
+                      No assets found
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-6">
+        <h3 className="text-lg font-semibold text-foreground mb-4">
+          Quick Actions
+        </h3>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Link
+            to="/assets"
+            className="enterprise-card p-4 hover:border-primary transition-colors flex items-center gap-3"
+          >
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+              <Package className="h-5 w-5" />
+            </div>
+            <div>
+              <p className="font-medium text-foreground">View Assets</p>
+              <p className="text-sm text-muted-foreground">
+                Browse all inventory
+              </p>
+            </div>
+          </Link>
+
+          <Link
+            to="/reports"
+            className="enterprise-card p-4 hover:border-primary transition-colors flex items-center gap-3"
+          >
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[hsl(var(--info)/0.1)] text-[hsl(var(--info))]">
+              <TrendingUp className="h-5 w-5" />
+            </div>
+            <div>
+              <p className="font-medium text-foreground">View Reports</p>
+              <p className="text-sm text-muted-foreground">
+                Analytics & insights
+              </p>
+            </div>
+          </Link>
+
+          <Link
+            to="/reports?tab=low-stock"
+            className="enterprise-card p-4 hover:border-primary transition-colors flex items-center gap-3"
+          >
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[hsl(var(--warning)/0.1)] text-[hsl(var(--warning))]">
+              <AlertTriangle className="h-5 w-5" />
+            </div>
+            <div>
+              <p className="font-medium text-foreground">Low Stock Alert</p>
+              <p className="text-sm text-muted-foreground">
+                {lowStockItems} items need attention
+              </p>
+            </div>
+          </Link>
+
+          <Link
+            to="/reports?tab=by-location"
+            className="enterprise-card p-4 hover:border-primary transition-colors flex items-center gap-3"
+          >
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[hsl(var(--success)/0.1)] text-[hsl(var(--success))]">
+              <MapPin className="h-5 w-5" />
+            </div>
+            <div>
+              <p className="font-medium text-foreground">By Location</p>
+              <p className="text-sm text-muted-foreground">
+                Assets per location
+              </p>
+            </div>
+          </Link>
+        </div>
+      </div>
     </Layout>
   );
 }

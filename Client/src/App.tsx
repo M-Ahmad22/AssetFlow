@@ -16,6 +16,7 @@ import AssetDetails from "./pages/AssetDetails";
 import AssetForm from "./pages/AssetForm";
 import Categories from "./pages/Categories";
 import Users from "./pages/Users";
+import Locations from "./pages/Location";
 import Reports from "./pages/Reports";
 import Unauthorized from "./pages/Unauthorized";
 import NotFound from "./pages/NotFound";
@@ -86,6 +87,15 @@ const App = () => (
                 element={
                   <ProtectedRoute requiredPermission="canManageCategories">
                     <Categories />
+                  </ProtectedRoute>
+                }
+              />
+              {/* Locations - Admin / Manager (same as Categories) */}
+              <Route
+                path="/locations"
+                element={
+                  <ProtectedRoute requiredPermission="canManageCategories">
+                    <Locations />
                   </ProtectedRoute>
                 }
               />

@@ -5,6 +5,10 @@ require("dotenv").config();
 
 const userRoutes = require("./Routes/user.routes");
 const authRoutes = require("./Routes/auth.routes");
+const categoryRoutes = require("./Routes/category.routes");
+const assetRoutes = require("./Routes/asset.routes");
+const locationRoutes = require("./Routes/location.routes");
+const reportRoutes = require("./Routes/report.routes");
 
 const app = express();
 
@@ -46,6 +50,10 @@ app.get("/", (req, res) => {
 
 app.use("/api/users", userRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/api/categories", categoryRoutes);
+app.use("/api/assets", assetRoutes);
+app.use("/api/locations", locationRoutes);
+app.use("/api/reports", reportRoutes);
 
 app.use((err, req, res, next) => {
   console.error(err.message);

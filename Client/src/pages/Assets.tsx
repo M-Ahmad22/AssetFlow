@@ -1,29 +1,20 @@
-import { useState, useMemo } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Layout } from '@/components/layout/Layout';
-import { useInventory } from '@/context/InventoryContext';
-import { useAuth } from '@/context/AuthContext';
-import { locations } from '@/data/locations';
-import { StatusBadge } from '@/components/ui/StatusBadge';
-import { AssetStatus } from '@/data/assets';
-import {
-  Search,
-  Filter,
-  Plus,
-  Eye,
-  Edit,
-  Trash2,
-  X,
-} from 'lucide-react';
+import { useState, useMemo } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { Layout } from "@/components/layout/Layout";
+import { useInventory } from "@/context/InventoryContext";
+import { useAuth } from "@/context/AuthContext";
+import { StatusBadge } from "@/components/ui/StatusBadge";
+import { AssetStatus } from "@/data/assets";
+import { Search, Filter, Plus, Eye, Edit, Trash2, X } from "lucide-react";
 
 export default function Assets() {
-  const { assets, categories, deleteAsset } = useInventory();
+  const { assets, categories, locations, deleteAsset } = useInventory();
   const { hasPermission } = useAuth();
   const navigate = useNavigate();
 
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<AssetStatus | 'all'>('all');
-  const [locationFilter, setLocationFilter] = useState<string>('all');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<AssetStatus | "all">("all");
+  const [locationFilter, setLocationFilter] = useState<string>("all");
   const [showDeleteModal, setShowDeleteModal] = useState<string | null>(null);
 
   const filteredAssets = useMemo(() => {
@@ -37,21 +28,21 @@ export default function Assets() {
           .includes(searchTerm.toLowerCase());
 
       const matchesStatus =
-        statusFilter === 'all' || asset.status === statusFilter;
+        statusFilter === "all" || asset.status === statusFilter;
 
       const matchesLocation =
-        locationFilter === 'all' || asset.locationId === locationFilter;
+        locationFilter === "all" || asset.locationId === locationFilter;
 
       return matchesSearch && matchesStatus && matchesLocation;
     });
   }, [assets, searchTerm, statusFilter, locationFilter, categories]);
 
   const getCategoryName = (categoryId: string) => {
-    return categories.find((c) => c.id === categoryId)?.name || 'Unknown';
+    return categories.find((c) => c.id === categoryId)?.name || "Unknown";
   };
 
   const getLocationName = (locationId: string) => {
-    return locations.find((l) => l.id === locationId)?.name || 'Unknown';
+    return locations.find((l) => l.id === locationId)?.name || "Unknown";
   };
 
   const handleDelete = (id: string) => {
@@ -60,20 +51,18 @@ export default function Assets() {
   };
 
   const clearFilters = () => {
-    setSearchTerm('');
-    setStatusFilter('all');
-    setLocationFilter('all');
+    setSearchTerm("");
+    setStatusFilter("all");
+    setLocationFilter("all");
   };
 
   const hasActiveFilters =
-    searchTerm || statusFilter !== 'all' || locationFilter !== 'all';
+    searchTerm || statusFilter !== "all" || locationFilter !== "all";
 
   return (
     <Layout title="Assets" description="Manage your inventory assets">
-      {/* Toolbar */}
       <div className="enterprise-card p-4 mb-6">
         <div className="flex flex-col lg:flex-row gap-4">
-          {/* Search */}
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <input
@@ -85,14 +74,13 @@ export default function Assets() {
             />
           </div>
 
-          {/* Filters */}
           <div className="flex flex-wrap gap-3">
             <div className="flex items-center gap-2">
               <Filter className="h-4 w-4 text-muted-foreground" />
               <select
                 value={statusFilter}
                 onChange={(e) =>
-                  setStatusFilter(e.target.value as AssetStatus | 'all')
+                  setStatusFilter(e.target.value as AssetStatus | "all")
                 }
                 className="enterprise-select w-36"
               >
@@ -118,13 +106,16 @@ export default function Assets() {
             </select>
 
             {hasActiveFilters && (
-              <button onClick={clearFilters} className="btn-ghost text-sm gap-1">
+              <button
+                onClick={clearFilters}
+                className="btn-ghost text-sm gap-1"
+              >
                 <X className="h-4 w-4" />
                 Clear
               </button>
             )}
 
-            {hasPermission('canCreate') && (
+            {hasPermission("canCreate") && (
               <Link to="/assets/new" className="btn-primary gap-2">
                 <Plus className="h-4 w-4" />
                 Add Asset
@@ -134,14 +125,12 @@ export default function Assets() {
         </div>
       </div>
 
-      {/* Results Count */}
       <div className="flex items-center justify-between mb-4">
         <p className="text-sm text-muted-foreground">
           Showing {filteredAssets.length} of {assets.length} assets
         </p>
       </div>
 
-      {/* Assets Table */}
       <div className="enterprise-card overflow-hidden">
         <div className="overflow-x-auto">
           <table className="enterprise-table">
@@ -160,7 +149,10 @@ export default function Assets() {
             <tbody>
               {filteredAssets.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="text-center py-8 text-muted-foreground">
+                  <td
+                    colSpan={8}
+                    className="text-center py-8 text-muted-foreground"
+                  >
                     No assets found matching your criteria
                   </td>
                 </tr>
@@ -169,7 +161,9 @@ export default function Assets() {
                   <tr key={asset.id}>
                     <td>
                       <div>
-                        <p className="font-medium text-foreground">{asset.name}</p>
+                        <p className="font-medium text-foreground">
+                          {asset.name}
+                        </p>
                         {asset.notes && (
                           <p className="text-xs text-muted-foreground mt-0.5">
                             {asset.notes}
@@ -189,8 +183,8 @@ export default function Assets() {
                       <span
                         className={`font-medium ${
                           asset.quantity < 5
-                            ? 'text-[hsl(var(--warning))]'
-                            : 'text-foreground'
+                            ? "text-[hsl(var(--warning))]"
+                            : "text-foreground"
                         }`}
                       >
                         {asset.quantity}
@@ -204,25 +198,22 @@ export default function Assets() {
                         <button
                           onClick={() => navigate(`/assets/${asset.id}`)}
                           className="btn-ghost p-2"
-                          title="View Details"
                         >
                           <Eye className="h-4 w-4" />
                         </button>
-                        {(hasPermission('canUpdate') ||
-                          hasPermission('canUpdateStatus')) && (
+                        {(hasPermission("canUpdate") ||
+                          hasPermission("canUpdateStatus")) && (
                           <button
                             onClick={() => navigate(`/assets/${asset.id}/edit`)}
                             className="btn-ghost p-2"
-                            title="Edit Asset"
                           >
                             <Edit className="h-4 w-4" />
                           </button>
                         )}
-                        {hasPermission('canDelete') && (
+                        {hasPermission("canDelete") && (
                           <button
                             onClick={() => setShowDeleteModal(asset.id)}
                             className="btn-ghost p-2 text-destructive hover:text-destructive"
-                            title="Delete Asset"
                           >
                             <Trash2 className="h-4 w-4" />
                           </button>
@@ -237,7 +228,6 @@ export default function Assets() {
         </div>
       </div>
 
-      {/* Delete Confirmation Modal */}
       {showDeleteModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/50">
           <div className="enterprise-card p-6 max-w-md w-full mx-4">

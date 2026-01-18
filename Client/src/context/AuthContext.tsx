@@ -7,18 +7,22 @@ import React, {
 } from "react";
 import { User, UserRole, rolePermissions } from "@/data/users";
 
-const API = import.meta.env.VITE_API_BASE_URL;
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 interface AuthContextType {
   user: User | null;
   users: User[];
+  token: string | null;
   isAuthenticated: boolean;
+
   login: (
     email: string,
     password: string
   ) => Promise<{ success: boolean; error?: string }>;
+
   logout: () => void;
   hasPermission: (permission: keyof typeof rolePermissions.Admin) => boolean;
+
   addUser: (userData: Omit<User, "id">) => Promise<boolean>;
   updateUser: (id: string, userData: Partial<User>) => Promise<boolean>;
   deleteUser: (id: string) => Promise<boolean>;
@@ -33,51 +37,45 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [users, setUsers] = useState<User[]>([]);
   const [token, setToken] = useState<string | null>(null);
 
-  // RESTORE TOKEN ON LOAD
-
   useEffect(() => {
-    const savedToken = localStorage.getItem("token");
-    if (savedToken) {
-      setToken(savedToken);
-    }
+    const saved = localStorage.getItem("token");
+    if (saved) setToken(saved);
   }, []);
-
-  // FETCH USERS (ADMIN)
 
   const fetchUsers = useCallback(async () => {
     if (!token) return;
 
     try {
-      const res = await fetch(`${API}/users`, {
+      const res = await fetch(`${API_BASE}/users`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
 
-      if (!res.ok) return;
-
       const data = await res.json();
 
-      const normalizedUsers: User[] = data.map((u: any) => ({
-        id: u._id,
-        name: u.name,
-        email: u.email,
-        role: u.role,
-        status: u.status,
-        avatar: u.avatar,
-      }));
+      const list = Array.isArray(data)
+        ? data
+        : Array.isArray(data.users)
+        ? data.users
+        : [];
 
-      setUsers(normalizedUsers);
-    } catch (err) {
-      console.error("Fetch users failed:", err);
-    }
+      setUsers(
+        list.map((u: any) => ({
+          id: u._id,
+          name: u.name,
+          email: u.email,
+          role: u.role,
+          status: u.status,
+          avatar: u.avatar,
+        }))
+      );
+    } catch {}
   }, [token]);
-
-  // LOGIN
 
   const login = useCallback(async (email: string, password: string) => {
     try {
-      const res = await fetch(`${API}/auth/login`, {
+      const res = await fetch(`${API_BASE}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -86,11 +84,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const data = await res.json();
 
       if (!res.ok) {
-        return { success: false, error: data.message };
+        return { success: false, error: data.message || "Login failed" };
       }
 
       setUser({
-        id: data.user._id || data.user.id,
+        id: data.user._id,
         name: data.user.name,
         email: data.user.email,
         role: data.user.role,
@@ -106,16 +104,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  // LOGOUT
-
   const logout = () => {
     setUser(null);
     setUsers([]);
     setToken(null);
     localStorage.removeItem("token");
   };
-
-  // PERMISSIONS
 
   const hasPermission = useCallback(
     (permission: keyof typeof rolePermissions.Admin) => {
@@ -125,11 +119,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     [user]
   );
 
-  // ADD USER
-
-  const addUser = async (userData: Omit<User, "id">): Promise<boolean> => {
+  const addUser = async (userData: Omit<User, "id">) => {
     try {
-      const res = await fetch(`${API}/users`, {
+      const res = await fetch(`${API_BASE}/users`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -139,7 +131,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
 
       if (!res.ok) return false;
-
       await fetchUsers();
       return true;
     } catch {
@@ -147,14 +138,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  // UPDATE USER
-
-  const updateUser = async (
-    id: string,
-    userData: Partial<User>
-  ): Promise<boolean> => {
+  const updateUser = async (id: string, userData: Partial<User>) => {
     try {
-      const res = await fetch(`${API}/users/${id}`, {
+      const res = await fetch(`${API_BASE}/users/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -164,7 +150,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
 
       if (!res.ok) return false;
-
       await fetchUsers();
       return true;
     } catch {
@@ -172,19 +157,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  // DELETE USER
-
-  const deleteUser = async (id: string): Promise<boolean> => {
+  const deleteUser = async (id: string) => {
     if (user?.id === id) return false;
 
     try {
-      const res = await fetch(`${API}/users/${id}`, {
+      const res = await fetch(`${API_BASE}/users/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
 
       if (!res.ok) return false;
-
       await fetchUsers();
       return true;
     } catch {
@@ -192,18 +174,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  // CHANGE ROLE
-
-  const changeUserRole = async (
-    id: string,
-    role: UserRole
-  ): Promise<boolean> => {
-    if (user?.id === id && user.role === "Admin" && role !== "Admin") {
-      return false;
-    }
-
+  const changeUserRole = async (id: string, role: UserRole) => {
     try {
-      const res = await fetch(`${API}/users/${id}/role`, {
+      const res = await fetch(`${API_BASE}/users/${id}/role`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -213,7 +186,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
 
       if (!res.ok) return false;
-
       await fetchUsers();
       return true;
     } catch {
@@ -221,17 +193,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  // TOGGLE STATUS
-
-  const toggleUserStatus = async (id: string): Promise<boolean> => {
+  const toggleUserStatus = async (id: string) => {
     try {
-      const res = await fetch(`${API}/users/${id}/status`, {
+      const res = await fetch(`${API_BASE}/users/${id}/status`, {
         method: "PATCH",
         headers: { Authorization: `Bearer ${token}` },
       });
 
       if (!res.ok) return false;
-
       await fetchUsers();
       return true;
     } catch {
@@ -248,6 +217,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       value={{
         user,
         users,
+        token,
         isAuthenticated: !!user,
         login,
         logout,

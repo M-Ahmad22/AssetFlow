@@ -142,25 +142,25 @@ export default function Login() {
             {/* Demo Credentials */}
             <div className="mt-6 pt-6 border-t border-border">
               <p className="text-xs text-muted-foreground text-center mb-3">
-                Demo Credentials
+                Credentials
               </p>
               <div className="space-y-2 text-xs">
                 <div className="flex justify-between items-center p-2 rounded bg-muted/50">
                   <span className="text-muted-foreground">Admin:</span>
                   <span className="font-mono text-foreground">
-                    sarah.johnson@company.com / admin123
+                    admin@company.com / admin123
                   </span>
                 </div>
                 <div className="flex justify-between items-center p-2 rounded bg-muted/50">
                   <span className="text-muted-foreground">Manager:</span>
                   <span className="font-mono text-foreground">
-                    michael.chen@company.com / manager123
+                    manager@matalogics.com / manager123
                   </span>
                 </div>
                 <div className="flex justify-between items-center p-2 rounded bg-muted/50">
                   <span className="text-muted-foreground">Viewer:</span>
                   <span className="font-mono text-foreground">
-                    emily.davis@company.com / viewer123
+                    viewer@matalogics.com / viewer123
                   </span>
                 </div>
               </div>
@@ -168,7 +168,15 @@ export default function Login() {
           </div>
 
           <p className="text-center text-sm text-muted-foreground mt-6">
-            Role-based access control system
+            © {new Date().getFullYear()} All rights reserved{" "}
+            <a
+              href="https://www.matalogics.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary hover:underline font-medium"
+            >
+              MATalogics
+            </a>
           </p>
         </div>
       </div>

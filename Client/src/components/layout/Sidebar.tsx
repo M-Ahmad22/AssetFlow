@@ -7,6 +7,7 @@ import {
   FileBarChart,
   Users,
   Box,
+  MapPin,
 } from "lucide-react";
 
 const navigation = [
@@ -25,6 +26,11 @@ const navigation = [
     permission: "canManageUsers" as const,
   },
   { name: "Reports", href: "/reports", icon: FileBarChart },
+  {
+    name: "Locations",
+    href: "/locations",
+    icon: MapPin,
+  },
 ];
 
 export function Sidebar() {
@@ -47,12 +53,10 @@ export function Sidebar() {
             <Box className="h-5 w-5 text-sidebar-primary-foreground" />
           </div>
           <div>
-            <h1 className="text-base font-semibold text-sidebar-foreground">
+            <h1 className="text-base font-semibold text-sidebar-accent">
               AssetFlow
             </h1>
-            <p className="text-xs text-sidebar-foreground/60">
-              Inventory System
-            </p>
+            <p className="text-xs text-sidebar-accent/60">Inventory System</p>
           </div>
         </div>
 

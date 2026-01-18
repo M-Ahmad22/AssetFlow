@@ -6,6 +6,11 @@ const { authorizeRoles } = require("../middleware/role.middleware");
 
 const router = express.Router();
 
+// router.get("/", (req, res) => {
+//   console.log("/api/users HIT");
+//   res.json({ ok: true });
+// });
+
 router.get("/", protect, authorizeRoles("Admin"), async (req, res) => {
   const users = await User.find().select("-password");
   res.json(users);

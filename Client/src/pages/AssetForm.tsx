@@ -1,72 +1,88 @@
-import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { Layout } from '@/components/layout/Layout';
-import { useInventory } from '@/context/InventoryContext';
-import { useAuth } from '@/context/AuthContext';
-import { locations } from '@/data/locations';
-import { AssetStatus, Asset } from '@/data/assets';
-import { ArrowLeft, Save } from 'lucide-react';
+import { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { Layout } from "@/components/layout/Layout";
+import { useInventory } from "@/context/InventoryContext";
+import { useAuth } from "@/context/AuthContext";
+import { AssetStatus } from "@/data/assets";
+import { ArrowLeft, Save } from "lucide-react";
 
-const statusOptions: AssetStatus[] = ['In Use', 'In Repair', 'In Stock', 'Available'];
+const statusOptions: AssetStatus[] = [
+  "In Use",
+  "In Repair",
+  "In Stock",
+  "Available",
+];
 
 export default function AssetForm() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { categories, addAsset, updateAsset, getAssetById } = useInventory();
+
+  const {
+    categories,
+    locations,
+    addAsset,
+    updateAsset,
+    getAssetById,
+    fetchLocations,
+  } = useInventory();
+
   const { hasPermission, user } = useAuth();
+
   const isEditing = !!id;
 
   const [formData, setFormData] = useState({
-    name: '',
-    serialNumber: '',
-    categoryId: '',
-    purchaseDate: '',
-    status: 'Available' as AssetStatus,
-    locationId: '',
+    name: "",
+    serialNumber: "",
+    categoryId: "",
+    purchaseDate: "",
+    status: "Available" as AssetStatus,
+    locationId: "",
     quantity: 1,
-    notes: '',
+    notes: "",
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // Check permissions
-  const canEditAll = hasPermission('canUpdate');
-  const canEditStatusLocation = hasPermission('canUpdateStatus');
-  const isManager = user?.role === 'Manager';
+  const isManager = user?.role === "Manager";
 
   useEffect(() => {
-    if (isEditing && id) {
-      const asset = getAssetById(id);
-      if (asset) {
-        setFormData({
-          name: asset.name,
-          serialNumber: asset.serialNumber,
-          categoryId: asset.categoryId,
-          purchaseDate: asset.purchaseDate,
-          status: asset.status,
-          locationId: asset.locationId,
-          quantity: asset.quantity,
-          notes: asset.notes || '',
-        });
-      }
-    }
+    fetchLocations();
+  }, [fetchLocations]);
+
+  useEffect(() => {
+    if (!isEditing || !id) return;
+
+    const asset = getAssetById(id);
+    if (!asset) return;
+
+    setFormData({
+      name: asset.name,
+      serialNumber: asset.serialNumber,
+      categoryId: asset.categoryId,
+      purchaseDate: asset.purchaseDate,
+      status: asset.status,
+      locationId: asset.locationId,
+      quantity: asset.quantity,
+      notes: asset.notes || "",
+    });
   }, [id, isEditing, getAssetById]);
 
   const validate = () => {
     const newErrors: Record<string, string> = {};
 
     if (!isManager) {
-      if (!formData.name.trim()) newErrors.name = 'Asset name is required';
+      if (!formData.name.trim()) newErrors.name = "Asset name is required";
       if (!formData.serialNumber.trim())
-        newErrors.serialNumber = 'Serial number is required';
-      if (!formData.categoryId) newErrors.categoryId = 'Category is required';
+        newErrors.serialNumber = "Serial number is required";
+      if (!formData.categoryId) newErrors.categoryId = "Category is required";
       if (!formData.purchaseDate)
-        newErrors.purchaseDate = 'Purchase date is required';
-      if (formData.quantity < 1) newErrors.quantity = 'Quantity must be at least 1';
+        newErrors.purchaseDate = "Purchase date is required";
+      if (formData.quantity < 1)
+        newErrors.quantity = "Quantity must be at least 1";
     }
 
-    if (!formData.status) newErrors.status = 'Status is required';
-    if (!formData.locationId) newErrors.locationId = 'Location is required';
+    if (!formData.status) newErrors.status = "Status is required";
+    if (!formData.locationId) newErrors.locationId = "Location is required";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -74,12 +90,10 @@ export default function AssetForm() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
     if (!validate()) return;
 
     if (isEditing && id) {
       if (isManager) {
-        // Manager can only update status and location
         updateAsset(id, {
           status: formData.status,
           locationId: formData.locationId,
@@ -91,42 +105,47 @@ export default function AssetForm() {
       addAsset(formData);
     }
 
-    navigate('/assets');
+    navigate("/assets");
   };
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+    e:
+      | React.ChangeEvent<HTMLInputElement>
+      | React.ChangeEvent<HTMLSelectElement>
+      | React.ChangeEvent<HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
+
     setFormData((prev) => ({
       ...prev,
-      [name]: name === 'quantity' ? parseInt(value) || 0 : value,
+      [name]: name === "quantity" ? parseInt(value) || 0 : value,
     }));
+
     if (errors[name]) {
-      setErrors((prev) => ({ ...prev, [name]: '' }));
+      setErrors((prev) => ({ ...prev, [name]: "" }));
     }
   };
 
-  const isFieldDisabled = (fieldName: string) => {
+  const isFieldDisabled = (field: string) => {
     if (isManager && isEditing) {
-      return !['status', 'locationId'].includes(fieldName);
+      return !["status", "locationId"].includes(field);
     }
     return false;
   };
 
   return (
     <Layout
-      title={isEditing ? 'Edit Asset' : 'Add New Asset'}
+      title={isEditing ? "Edit Asset" : "Add New Asset"}
       description={
         isEditing
           ? isManager
-            ? 'Update asset status and location'
-            : 'Modify asset details'
-          : 'Add a new asset to inventory'
+            ? "Update asset status and location"
+            : "Modify asset details"
+          : "Add a new asset to inventory"
       }
     >
       <button
-        onClick={() => navigate('/assets')}
+        onClick={() => navigate("/assets")}
         className="btn-ghost gap-2 mb-6"
       >
         <ArrowLeft className="h-4 w-4" />
@@ -136,81 +155,58 @@ export default function AssetForm() {
       <div className="max-w-2xl">
         <form onSubmit={handleSubmit} className="enterprise-card p-6 space-y-6">
           {isManager && isEditing && (
-            <div className="bg-[hsl(var(--warning)/0.1)] border border-[hsl(var(--warning)/0.3)] rounded-lg p-4 mb-6">
+            <div className="bg-[hsl(var(--warning)/0.1)] border border-[hsl(var(--warning)/0.3)] rounded-lg p-4">
               <p className="text-sm text-[hsl(var(--warning))]">
-                As a Manager, you can only update the Status and Location fields.
+                Managers can only update Status and Location.
               </p>
             </div>
           )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Asset Name */}
+            {/* NAME */}
             <div className="md:col-span-2">
               <label className="enterprise-label">Asset Name *</label>
               <input
-                type="text"
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
-                disabled={isFieldDisabled('name')}
-                className={`enterprise-input ${
-                  errors.name ? 'border-destructive' : ''
-                } ${isFieldDisabled('name') ? 'bg-muted opacity-60' : ''}`}
-                placeholder="e.g., Dell XPS 15 Laptop"
+                disabled={isFieldDisabled("name")}
+                className="enterprise-input"
               />
-              {errors.name && (
-                <p className="text-destructive text-sm mt-1">{errors.name}</p>
-              )}
             </div>
 
-            {/* Serial Number */}
+            {/* SERIAL */}
             <div>
               <label className="enterprise-label">Serial Number *</label>
               <input
-                type="text"
                 name="serialNumber"
                 value={formData.serialNumber}
                 onChange={handleChange}
-                disabled={isFieldDisabled('serialNumber')}
-                className={`enterprise-input ${
-                  errors.serialNumber ? 'border-destructive' : ''
-                } ${isFieldDisabled('serialNumber') ? 'bg-muted opacity-60' : ''}`}
-                placeholder="e.g., DXP-2024-001"
+                disabled={isFieldDisabled("serialNumber")}
+                className="enterprise-input"
               />
-              {errors.serialNumber && (
-                <p className="text-destructive text-sm mt-1">
-                  {errors.serialNumber}
-                </p>
-              )}
             </div>
 
-            {/* Category */}
+            {/* CATEGORY */}
             <div>
               <label className="enterprise-label">Category *</label>
               <select
                 name="categoryId"
                 value={formData.categoryId}
                 onChange={handleChange}
-                disabled={isFieldDisabled('categoryId')}
-                className={`enterprise-select ${
-                  errors.categoryId ? 'border-destructive' : ''
-                } ${isFieldDisabled('categoryId') ? 'bg-muted opacity-60' : ''}`}
+                disabled={isFieldDisabled("categoryId")}
+                className="enterprise-select"
               >
                 <option value="">Select category</option>
-                {categories.map((cat) => (
-                  <option key={cat.id} value={cat.id}>
-                    {cat.name}
+                {categories.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
                   </option>
                 ))}
               </select>
-              {errors.categoryId && (
-                <p className="text-destructive text-sm mt-1">
-                  {errors.categoryId}
-                </p>
-              )}
             </div>
 
-            {/* Purchase Date */}
+            {/* PURCHASE DATE */}
             <div>
               <label className="enterprise-label">Purchase Date *</label>
               <input
@@ -218,112 +214,84 @@ export default function AssetForm() {
                 name="purchaseDate"
                 value={formData.purchaseDate}
                 onChange={handleChange}
-                disabled={isFieldDisabled('purchaseDate')}
-                className={`enterprise-input ${
-                  errors.purchaseDate ? 'border-destructive' : ''
-                } ${isFieldDisabled('purchaseDate') ? 'bg-muted opacity-60' : ''}`}
+                disabled={isFieldDisabled("purchaseDate")}
+                className="enterprise-input"
               />
-              {errors.purchaseDate && (
-                <p className="text-destructive text-sm mt-1">
-                  {errors.purchaseDate}
-                </p>
-              )}
             </div>
 
-            {/* Quantity */}
+            {/* QUANTITY */}
             <div>
               <label className="enterprise-label">Quantity *</label>
               <input
                 type="number"
                 name="quantity"
-                min="1"
+                min={1}
                 value={formData.quantity}
                 onChange={handleChange}
-                disabled={isFieldDisabled('quantity')}
-                className={`enterprise-input ${
-                  errors.quantity ? 'border-destructive' : ''
-                } ${isFieldDisabled('quantity') ? 'bg-muted opacity-60' : ''}`}
+                disabled={isFieldDisabled("quantity")}
+                className="enterprise-input"
               />
-              {errors.quantity && (
-                <p className="text-destructive text-sm mt-1">{errors.quantity}</p>
-              )}
             </div>
 
-            {/* Status */}
+            {/* STATUS */}
             <div>
               <label className="enterprise-label">Status *</label>
               <select
                 name="status"
                 value={formData.status}
                 onChange={handleChange}
-                className={`enterprise-select ${
-                  errors.status ? 'border-destructive' : ''
-                }`}
+                className="enterprise-select"
               >
-                {statusOptions.map((status) => (
-                  <option key={status} value={status}>
-                    {status}
+                {statusOptions.map((s) => (
+                  <option key={s} value={s}>
+                    {s}
                   </option>
                 ))}
               </select>
-              {errors.status && (
-                <p className="text-destructive text-sm mt-1">{errors.status}</p>
-              )}
             </div>
 
-            {/* Location */}
+            {/* LOCATION (🔥 FIXED) */}
             <div>
               <label className="enterprise-label">Location *</label>
               <select
                 name="locationId"
                 value={formData.locationId}
                 onChange={handleChange}
-                className={`enterprise-select ${
-                  errors.locationId ? 'border-destructive' : ''
-                }`}
+                className="enterprise-select"
               >
                 <option value="">Select location</option>
-                {locations.map((loc) => (
-                  <option key={loc.id} value={loc.id}>
-                    {loc.name}
+                {locations.map((l) => (
+                  <option key={l.id} value={l.id}>
+                    {l.name}
                   </option>
                 ))}
               </select>
-              {errors.locationId && (
-                <p className="text-destructive text-sm mt-1">
-                  {errors.locationId}
-                </p>
-              )}
             </div>
 
-            {/* Notes */}
+            {/* NOTES */}
             <div className="md:col-span-2">
               <label className="enterprise-label">Notes</label>
               <textarea
                 name="notes"
                 value={formData.notes}
                 onChange={handleChange}
-                disabled={isFieldDisabled('notes')}
                 rows={3}
-                className={`enterprise-input resize-none ${
-                  isFieldDisabled('notes') ? 'bg-muted opacity-60' : ''
-                }`}
-                placeholder="Additional notes about this asset..."
+                className="enterprise-input resize-none"
               />
             </div>
           </div>
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-border">
+          <div className="flex justify-end gap-3 pt-4 border-t">
             <button
               type="button"
-              onClick={() => navigate('/assets')}
+              onClick={() => navigate("/assets")}
               className="btn-secondary"
             >
               Cancel
             </button>
             <button type="submit" className="btn-primary gap-2">
               <Save className="h-4 w-4" />
-              {isEditing ? 'Update Asset' : 'Create Asset'}
+              {isEditing ? "Update Asset" : "Create Asset"}
             </button>
           </div>
         </form>

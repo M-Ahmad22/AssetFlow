@@ -1,55 +1,52 @@
-import { useState, useMemo } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { Layout } from '@/components/layout/Layout';
-import { useInventory } from '@/context/InventoryContext';
-import { locations } from '@/data/locations';
-import { StatusBadge } from '@/components/ui/StatusBadge';
-import {
-  MapPin,
-  AlertTriangle,
-  Printer,
-  Download,
-  FileBarChart,
-} from 'lucide-react';
+import { useState, useMemo, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
+import { Layout } from "@/components/layout/Layout";
+import { useInventory } from "@/context/InventoryContext";
+import { StatusBadge } from "@/components/ui/StatusBadge";
+import { MapPin, AlertTriangle, Printer, FileBarChart } from "lucide-react";
 
-type ReportTab = 'by-location' | 'low-stock';
+type ReportTab = "by-location" | "low-stock";
 
 export default function Reports() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const initialTab = (searchParams.get('tab') as ReportTab) || 'by-location';
+  const initialTab = (searchParams.get("tab") as ReportTab) || "by-location";
   const [activeTab, setActiveTab] = useState<ReportTab>(initialTab);
-  const [selectedLocation, setSelectedLocation] = useState<string>(
-    locations[0]?.id || ''
-  );
 
-  const { assets, categories } = useInventory();
+  const { assets, categories, locations, fetchLocations } = useInventory();
+
+  const [selectedLocation, setSelectedLocation] = useState<string>("");
+
+  useEffect(() => {
+    fetchLocations();
+  }, [fetchLocations]);
+
+  useEffect(() => {
+    if (!selectedLocation && locations.length > 0) {
+      setSelectedLocation(locations[0].id);
+    }
+  }, [locations, selectedLocation]);
 
   const handleTabChange = (tab: ReportTab) => {
     setActiveTab(tab);
     setSearchParams({ tab });
   };
 
-  // Assets by Location
   const assetsByLocation = useMemo(() => {
+    if (!selectedLocation) return [];
     return assets.filter((a) => a.locationId === selectedLocation);
   }, [assets, selectedLocation]);
 
-  // Low Stock Items (quantity < 5)
   const lowStockItems = useMemo(() => {
     return assets.filter((a) => a.quantity < 5);
   }, [assets]);
 
-  const getCategoryName = (categoryId: string) => {
-    return categories.find((c) => c.id === categoryId)?.name || 'Unknown';
-  };
+  const getCategoryName = (categoryId: string) =>
+    categories.find((c) => c.id === categoryId)?.name || "Unknown";
 
-  const getLocationName = (locationId: string) => {
-    return locations.find((l) => l.id === locationId)?.name || 'Unknown';
-  };
+  const getLocationName = (locationId: string) =>
+    locations.find((l) => l.id === locationId)?.name || "Unknown";
 
-  const handlePrint = () => {
-    window.print();
-  };
+  const handlePrint = () => window.print();
 
   return (
     <Layout title="Reports" description="Inventory analytics and reports">
@@ -57,22 +54,23 @@ export default function Reports() {
       <div className="enterprise-card mb-6">
         <div className="flex border-b border-border">
           <button
-            onClick={() => handleTabChange('by-location')}
+            onClick={() => handleTabChange("by-location")}
             className={`flex items-center gap-2 px-6 py-4 text-sm font-medium border-b-2 transition-colors ${
-              activeTab === 'by-location'
-                ? 'border-primary text-primary'
-                : 'border-transparent text-muted-foreground hover:text-foreground'
+              activeTab === "by-location"
+                ? "border-primary text-primary"
+                : "border-transparent text-muted-foreground hover:text-foreground"
             }`}
           >
             <MapPin className="h-4 w-4" />
             Assets by Location
           </button>
+
           <button
-            onClick={() => handleTabChange('low-stock')}
+            onClick={() => handleTabChange("low-stock")}
             className={`flex items-center gap-2 px-6 py-4 text-sm font-medium border-b-2 transition-colors ${
-              activeTab === 'low-stock'
-                ? 'border-primary text-primary'
-                : 'border-transparent text-muted-foreground hover:text-foreground'
+              activeTab === "low-stock"
+                ? "border-primary text-primary"
+                : "border-transparent text-muted-foreground hover:text-foreground"
             }`}
           >
             <AlertTriangle className="h-4 w-4" />
@@ -86,10 +84,8 @@ export default function Reports() {
         </div>
       </div>
 
-      {/* Report Content */}
-      {activeTab === 'by-location' && (
+      {activeTab === "by-location" && (
         <div className="space-y-4">
-          {/* Location Selector */}
           <div className="enterprise-card p-4 no-print">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div className="flex items-center gap-3">
@@ -108,6 +104,7 @@ export default function Reports() {
                   ))}
                 </select>
               </div>
+
               <button onClick={handlePrint} className="btn-secondary gap-2">
                 <Printer className="h-4 w-4" />
                 Print Report
@@ -115,7 +112,6 @@ export default function Reports() {
             </div>
           </div>
 
-          {/* Report Header */}
           <div className="enterprise-card p-6">
             <div className="flex items-center justify-between mb-6">
               <div>
@@ -123,7 +119,7 @@ export default function Reports() {
                   Assets at {getLocationName(selectedLocation)}
                 </h2>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Generated on {new Date().toLocaleDateString()} •{' '}
+                  Generated on {new Date().toLocaleDateString()} •{" "}
                   {assetsByLocation.length} assets found
                 </p>
               </div>
@@ -171,37 +167,22 @@ export default function Reports() {
         </div>
       )}
 
-      {activeTab === 'low-stock' && (
+      {activeTab === "low-stock" && (
         <div className="space-y-4">
-          {/* Report Actions */}
-          <div className="enterprise-card p-4 no-print">
-            <div className="flex justify-between items-center">
-              <p className="text-sm text-muted-foreground">
-                Showing items with quantity less than 5 units
-              </p>
-              <button onClick={handlePrint} className="btn-secondary gap-2">
-                <Printer className="h-4 w-4" />
-                Print Report
-              </button>
-            </div>
+          <div className="enterprise-card p-4 no-print flex justify-between">
+            <p className="text-sm text-muted-foreground">
+              Showing items with quantity less than 5 units
+            </p>
+            <button onClick={handlePrint} className="btn-secondary gap-2">
+              <Printer className="h-4 w-4" />
+              Print Report
+            </button>
           </div>
 
-          {/* Report Content */}
           <div className="enterprise-card p-6">
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h2 className="text-xl font-semibold text-foreground">
-                  Low Stock Alert Report
-                </h2>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Generated on {new Date().toLocaleDateString()} •{' '}
-                  {lowStockItems.length} items need attention
-                </p>
-              </div>
-              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-[hsl(var(--warning)/0.1)] text-[hsl(var(--warning))]">
-                <AlertTriangle className="h-6 w-6" />
-              </div>
-            </div>
+            <h2 className="text-xl font-semibold text-foreground mb-4">
+              Low Stock Alert Report
+            </h2>
 
             {lowStockItems.length > 0 ? (
               <table className="enterprise-table">
@@ -230,8 +211,8 @@ export default function Reports() {
                           <span
                             className={`font-bold ${
                               isCritical
-                                ? 'text-destructive'
-                                : 'text-[hsl(var(--warning))]'
+                                ? "text-destructive"
+                                : "text-[hsl(var(--warning))]"
                             }`}
                           >
                             {asset.quantity}
@@ -241,11 +222,11 @@ export default function Reports() {
                           <span
                             className={`status-badge ${
                               isCritical
-                                ? 'bg-destructive/10 text-destructive'
-                                : 'bg-[hsl(var(--warning)/0.15)] text-[hsl(var(--warning))]'
+                                ? "bg-destructive/10 text-destructive"
+                                : "bg-[hsl(var(--warning)/0.15)] text-[hsl(var(--warning))]"
                             }`}
                           >
-                            {isCritical ? 'Critical' : 'Low'}
+                            {isCritical ? "Critical" : "Low"}
                           </span>
                         </td>
                       </tr>
@@ -267,37 +248,6 @@ export default function Reports() {
               </div>
             )}
           </div>
-
-          {/* Summary by Category */}
-          {lowStockItems.length > 0 && (
-            <div className="enterprise-card p-6">
-              <h3 className="text-lg font-semibold text-foreground mb-4">
-                Summary by Category
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {categories.map((cat) => {
-                  const catLowStock = lowStockItems.filter(
-                    (a) => a.categoryId === cat.id
-                  );
-                  if (catLowStock.length === 0) return null;
-                  return (
-                    <div
-                      key={cat.id}
-                      className="p-4 rounded-lg border border-border"
-                    >
-                      <p className="font-medium text-foreground">{cat.name}</p>
-                      <p className="text-2xl font-bold text-[hsl(var(--warning))] mt-1">
-                        {catLowStock.length}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        items low on stock
-                      </p>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
         </div>
       )}
     </Layout>
