@@ -1,0 +1,267 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Enterprise Inventory Management Design System */
+
+@layer base {
+  :root {
+    /* Primary - Deep Navy */
+    --primary: 220 70% 25%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Background - Light grays */
+    --background: 220 14% 96%;
+    --foreground: 222 47% 11%;
+
+    /* Cards */
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+
+    /* Popover */
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+
+    /* Secondary */
+    --secondary: 220 13% 91%;
+    --secondary-foreground: 222 47% 11%;
+
+    /* Muted */
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 9% 46%;
+
+    /* Accent */
+    --accent: 220 13% 91%;
+    --accent-foreground: 222 47% 11%;
+
+    /* Destructive */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Border & Input */
+    --border: 220 13% 87%;
+    --input: 220 13% 87%;
+    --ring: 220 70% 25%;
+
+    --radius: 0.375rem;
+
+    /* Sidebar - Dark navy */
+    --sidebar-background: 222 47% 11%;
+    --sidebar-foreground: 220 14% 96%;
+    --sidebar-primary: 220 70% 50%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 47% 18%;
+    --sidebar-accent-foreground: 220 14% 96%;
+    --sidebar-border: 220 47% 18%;
+    --sidebar-ring: 220 70% 50%;
+
+    /* Status Colors */
+    --status-available: 142 71% 45%;
+    --status-in-use: 217 91% 60%;
+    --status-in-repair: 38 92% 50%;
+    --status-in-stock: 262 83% 58%;
+
+    /* Enterprise accents */
+    --success: 142 71% 45%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+    --info: 217 91% 60%;
+    --info-foreground: 0 0% 100%;
+  }
+
+  .dark {
+    --primary: 220 70% 50%;
+    --primary-foreground: 0 0% 100%;
+    --background: 222 47% 8%;
+    --foreground: 220 14% 96%;
+    --card: 222 47% 11%;
+    --card-foreground: 220 14% 96%;
+    --popover: 222 47% 11%;
+    --popover-foreground: 220 14% 96%;
+    --secondary: 220 47% 18%;
+    --secondary-foreground: 220 14% 96%;
+    --muted: 220 47% 18%;
+    --muted-foreground: 220 9% 60%;
+    --accent: 220 47% 18%;
+    --accent-foreground: 220 14% 96%;
+    --destructive: 0 62% 50%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 220 47% 18%;
+    --input: 220 47% 18%;
+    --ring: 220 70% 50%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-family: "Inter", system-ui, -apple-system, sans-serif;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-semibold tracking-tight;
+  }
+}
+
+@layer components {
+  /* Enterprise Table Styles */
+  .enterprise-table {
+    @apply w-full border-collapse;
+  }
+
+  .enterprise-table th {
+    @apply bg-secondary text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground border-b border-border;
+  }
+
+  .enterprise-table td {
+    @apply px-4 py-3 text-sm border-b border-border;
+  }
+
+  .enterprise-table tr:hover {
+    @apply bg-muted/50;
+  }
+
+  /* Status Badges */
+  .status-badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+
+  .status-available {
+    @apply bg-[hsl(var(--status-available)/0.15)] text-[hsl(var(--status-available))];
+  }
+
+  .status-in-use {
+    @apply bg-[hsl(var(--status-in-use)/0.15)] text-[hsl(var(--status-in-use))];
+  }
+
+  .status-in-repair {
+    @apply bg-[hsl(var(--status-in-repair)/0.15)] text-[hsl(var(--status-in-repair))];
+  }
+
+  .status-in-stock {
+    @apply bg-[hsl(var(--status-in-stock)/0.15)] text-[hsl(var(--status-in-stock))];
+  }
+
+  /* Role Badges */
+  .role-badge {
+    @apply inline-flex items-center px-2 py-1 rounded text-xs font-medium;
+  }
+
+  .role-admin {
+    @apply bg-destructive/10 text-destructive;
+  }
+
+  .role-manager {
+    @apply bg-[hsl(var(--warning)/0.15)] text-[hsl(var(--warning))];
+  }
+
+  .role-viewer {
+    @apply bg-[hsl(var(--info)/0.15)] text-[hsl(var(--info))];
+  }
+
+  /* Enterprise Card */
+  .enterprise-card {
+    @apply bg-card rounded-lg border border-border shadow-sm;
+  }
+
+  /* Form Styles */
+  .enterprise-input {
+    @apply w-full px-3 py-2 border border-input rounded-md bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors;
+  }
+
+  .enterprise-select {
+    @apply enterprise-input cursor-pointer;
+  }
+
+  .enterprise-label {
+    @apply block text-sm font-medium text-foreground mb-1.5;
+  }
+
+  /* Button Variants */
+  .btn-enterprise {
+    @apply inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-primary {
+    @apply btn-enterprise bg-primary text-primary-foreground hover:bg-primary/90;
+  }
+
+  .btn-secondary {
+    @apply btn-enterprise bg-secondary text-secondary-foreground hover:bg-secondary/80;
+  }
+
+  .btn-destructive {
+    @apply btn-enterprise bg-destructive text-destructive-foreground hover:bg-destructive/90;
+  }
+
+  .btn-ghost {
+    @apply btn-enterprise hover:bg-accent hover:text-accent-foreground;
+  }
+
+  /* Sidebar Navigation */
+  .sidebar-nav-item {
+    @apply flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-sidebar-accent hover:bg-sidebar-accent hover:text-sidebar-foreground transition-colors;
+  }
+
+  .sidebar-nav-item.active {
+    @apply bg-sidebar-accent text-sidebar-foreground;
+  }
+
+  /* Page Header */
+  .page-header {
+    @apply mb-6;
+  }
+
+  .page-title {
+    @apply text-2xl font-semibold text-foreground;
+  }
+
+  .page-description {
+    @apply text-sm text-muted-foreground mt-1;
+  }
+
+  /* Stat Card */
+  .stat-card {
+    @apply enterprise-card p-5;
+  }
+
+  .stat-card-value {
+    @apply text-3xl font-bold text-foreground;
+  }
+
+  .stat-card-label {
+    @apply text-sm text-muted-foreground mt-1;
+  }
+
+  .stat-card-icon {
+    @apply w-10 h-10 rounded-lg flex items-center justify-center;
+  }
+}
+
+/* Print Styles for Reports */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  .enterprise-card {
+    box-shadow: none;
+    border: 1px solid #ddd;
+  }
+
+  body {
+    background: white;
+  }
+}
