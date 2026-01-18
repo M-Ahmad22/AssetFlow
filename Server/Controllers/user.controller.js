@@ -1,5 +1,5 @@
 const User = require("../Models/User.model");
-const { hashPassword } = require("../Utils/hash");
+const { hashPassword } = require("../utils/hash");
 
 const createUser = async (req, res) => {
   try {
