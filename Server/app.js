@@ -15,14 +15,11 @@ const app = express();
 const allowedOrigins = [
   process.env.FRONTEND_URL,
   process.env.ADMIN_FRONTEND_URL,
-  // "https://www.matalogics.com",
-  // "https://matalogics-admin.vercel.app",
 ];
 
 app.use(
   cors({
     origin: function (origin, callback) {
-      // Allow requests with no origin (like Postman or server-to-server)
       if (!origin) return callback(null, true);
 
       if (allowedOrigins.includes(origin)) {
