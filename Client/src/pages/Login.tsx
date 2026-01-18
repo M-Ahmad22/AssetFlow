@@ -147,19 +147,19 @@ export default function Login() {
               <div className="space-y-2 text-xs">
                 <div className="flex justify-between items-center p-2 rounded bg-muted/50">
                   <span className="text-muted-foreground">Admin:</span>
-                  <span className="px-[19px] font-mono text-foreground">
+                  <span className="px-[22px] lg:px-0 font-mono text-foreground">
                     admin@matalogics.com / admin123
                   </span>
                 </div>
                 <div className="flex justify-between items-center p-2 rounded bg-muted/50">
                   <span className="text-muted-foreground">Manager:</span>
-                  <span className="px-2 font-mono text-foreground">
+                  <span className="px-2 lg:px-0 font-mono text-foreground">
                     manager@matalogics.com / manager123
                   </span>
                 </div>
                 <div className="flex justify-between items-center p-2 rounded bg-muted/50">
                   <span className="text-muted-foreground">Viewer:</span>
-                  <span className="px-5 font-mono text-foreground">
+                  <span className="px-5 lg:px-0 font-mono text-foreground">
                     viewer@matalogics.com / viewer123
                   </span>
                 </div>
